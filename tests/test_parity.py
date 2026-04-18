@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
-import json
 import shutil
 import sys
 from pathlib import Path
@@ -63,7 +62,7 @@ def _normalize_manifest_paths(
         copy = dict(value)
         sp = copy.get("source_path")
         if isinstance(sp, str) and sp.startswith(base_str):
-            copy["source_path"] = sp[len(base_str):].lstrip("/")
+            copy["source_path"] = sp[len(base_str) :].lstrip("/")
         out[key] = copy
     return out
 
@@ -236,7 +235,11 @@ def test_branch_swap_parity(
         "tools:\n  - Read\n  - Grep\n---\n\nYou are explorer.\n"
     )
 
-    def _run_both(src: Path) -> tuple[dict[str, str], dict[str, dict[str, Any]], dict[str, str], dict[str, dict[str, Any]]]:
+    def _run_both(
+        src: Path,
+    ) -> tuple[
+        dict[str, str], dict[str, dict[str, Any]], dict[str, str], dict[str, dict[str, Any]]
+    ]:
         """Run legacy + new against ``src`` and return (old_tree, old_manifest_norm, new_tree, new_manifest_norm)."""
         # ---- legacy ----
         legacy = _import_legacy()
@@ -323,10 +326,7 @@ def test_parse_frontmatter_parity() -> None:
     # Defensive: parse_frontmatter is the most-trafficked helper. Lock it
     # against the legacy implementation directly.
     legacy = _import_legacy()
-    text = (
-        "---\nname: x\ndescription: y\ntools:\n  - Read\n  - Bash\n---\n"
-        "Body content here."
-    )
+    text = "---\nname: x\ndescription: y\ntools:\n  - Read\n  - Bash\n---\nBody content here."
     legacy_fm, legacy_body = legacy.parse_frontmatter(text)
     from hermes_plugin_sync.frontmatter import parse_frontmatter as new_parse
 

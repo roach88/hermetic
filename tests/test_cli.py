@@ -17,13 +17,14 @@ import pytest
 from hermes_plugin_sync import cli, core
 from hermes_plugin_sync.manifest import load_manifest, save_manifest
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _write_config(path: Path, plugins: list[dict[str, Any]]) -> Path:
     import yaml
+
     path.write_text(yaml.safe_dump(plugins))
     return path
 
@@ -39,6 +40,7 @@ def _seed_manifest(hermes_home: Path, manifest: dict[str, Any]) -> None:
 # ---------------------------------------------------------------------------
 # --version, --help
 # ---------------------------------------------------------------------------
+
 
 def test_version_flag_prints_version(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as exc:
@@ -61,6 +63,7 @@ def test_help_lists_subcommands(capsys: pytest.CaptureFixture[str]) -> None:
 # sync
 # ---------------------------------------------------------------------------
 
+
 def test_sync_happy_path(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -76,13 +79,10 @@ def test_sync_happy_path(
         rc = cli.main(["--hermes-home", str(hermes_home), "sync", "--config", str(cfg)])
 
     assert rc == 0
-    assert (
-        hermes_home / "skills" / "sample-plugin" / "hello-skill" / "SKILL.md"
-    ).exists()
+    assert (hermes_home / "skills" / "sample-plugin" / "hello-skill" / "SKILL.md").exists()
     # End-of-sync summary line is mandatory (D2=A).
     assert any(
-        "Synced 1/1 plugins" in rec.message and "errors" in rec.message
-        for rec in caplog.records
+        "Synced 1/1 plugins" in rec.message and "errors" in rec.message for rec in caplog.records
     ), [rec.message for rec in caplog.records]
 
 
@@ -91,10 +91,15 @@ def test_sync_missing_config(
     hermes_home: Path,
     tmp_path: Path,
 ) -> None:
-    rc = cli.main([
-        "--hermes-home", str(hermes_home),
-        "sync", "--config", str(tmp_path / "nope.yaml"),
-    ])
+    rc = cli.main(
+        [
+            "--hermes-home",
+            str(hermes_home),
+            "sync",
+            "--config",
+            str(tmp_path / "nope.yaml"),
+        ]
+    )
     assert rc != 0
     err = capsys.readouterr().err
     assert "config file not found" in err
@@ -107,10 +112,15 @@ def test_sync_malformed_yaml(
 ) -> None:
     bad = tmp_path / "bad.yaml"
     bad.write_text(":\n  - this is not valid yaml: [")
-    rc = cli.main([
-        "--hermes-home", str(hermes_home),
-        "sync", "--config", str(bad),
-    ])
+    rc = cli.main(
+        [
+            "--hermes-home",
+            str(hermes_home),
+            "sync",
+            "--config",
+            str(bad),
+        ]
+    )
     assert rc != 0
     err = capsys.readouterr().err
     assert "failed to parse" in err or "expected" in err
@@ -139,19 +149,20 @@ def test_sync_continues_on_error_and_exits_nonzero(
 
     monkeypatch.setattr(core, "clone_or_update", selective_clone)
 
-    cfg = _write_config(tmp_path / "plugin-sync.yaml", [
-        {"name": "bad-plugin", "git": "https://example.invalid/bad.git", "branch": "main"},
-        {"name": "good-plugin", "git": "https://example.invalid/good.git", "branch": "main"},
-    ])
+    cfg = _write_config(
+        tmp_path / "plugin-sync.yaml",
+        [
+            {"name": "bad-plugin", "git": "https://example.invalid/bad.git", "branch": "main"},
+            {"name": "good-plugin", "git": "https://example.invalid/good.git", "branch": "main"},
+        ],
+    )
 
     with caplog.at_level(logging.INFO, logger="hermes_plugin_sync.cli"):
         rc = cli.main(["--hermes-home", str(hermes_home), "sync", "--config", str(cfg)])
 
     assert rc == 1
     # Good plugin completed.
-    assert (
-        hermes_home / "skills" / "good-plugin" / "hello-skill" / "SKILL.md"
-    ).exists()
+    assert (hermes_home / "skills" / "good-plugin" / "hello-skill" / "SKILL.md").exists()
     # Manifest persisted with good-plugin entries + meta.
     manifest = load_manifest(hermes_home)
     assert "good-plugin/hello-skill" in manifest
@@ -178,8 +189,10 @@ def test_sync_empty_config_yields_zero_total(
 # list
 # ---------------------------------------------------------------------------
 
+
 def test_list_empty(
-    capsys: pytest.CaptureFixture[str], hermes_home: Path,
+    capsys: pytest.CaptureFixture[str],
+    hermes_home: Path,
 ) -> None:
     rc = cli.main(["--hermes-home", str(hermes_home), "list"])
     assert rc == 0
@@ -237,6 +250,7 @@ def test_list_json_shape(
 # inspect
 # ---------------------------------------------------------------------------
 
+
 def test_inspect_happy_path_text(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -270,9 +284,15 @@ def test_inspect_json_shape(
     core.sync_plugin(plugin_cfg, hermes_home, manifest)
     save_manifest(hermes_home, manifest)
 
-    rc = cli.main([
-        "--hermes-home", str(hermes_home), "inspect", "sample-plugin", "--json",
-    ])
+    rc = cli.main(
+        [
+            "--hermes-home",
+            str(hermes_home),
+            "inspect",
+            "sample-plugin",
+            "--json",
+        ]
+    )
     assert rc == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["name"] == "sample-plugin"
@@ -289,7 +309,8 @@ def test_inspect_json_shape(
 
 
 def test_inspect_unknown_plugin_text(
-    capsys: pytest.CaptureFixture[str], hermes_home: Path,
+    capsys: pytest.CaptureFixture[str],
+    hermes_home: Path,
 ) -> None:
     # Manifest is empty; inspecting nonexistent plugin.
     rc = cli.main(["--hermes-home", str(hermes_home), "inspect", "ghost"])
@@ -312,9 +333,15 @@ def test_inspect_unknown_plugin_json(
     core.sync_plugin(plugin_cfg, hermes_home, manifest)
     save_manifest(hermes_home, manifest)
 
-    rc = cli.main([
-        "--hermes-home", str(hermes_home), "inspect", "ghost", "--json",
-    ])
+    rc = cli.main(
+        [
+            "--hermes-home",
+            str(hermes_home),
+            "inspect",
+            "ghost",
+            "--json",
+        ]
+    )
     # Documented choice: JSON-on-stdout-with-nonzero-exit.
     assert rc != 0
     payload = json.loads(capsys.readouterr().out)
@@ -323,7 +350,8 @@ def test_inspect_unknown_plugin_json(
 
 
 def test_inspect_on_empty_hermes_home_returns_nonzero(
-    capsys: pytest.CaptureFixture[str], hermes_home: Path,
+    capsys: pytest.CaptureFixture[str],
+    hermes_home: Path,
 ) -> None:
     # Gap coverage: inspect against a hermes_home with no manifest at all.
     rc = cli.main(["--hermes-home", str(hermes_home), "inspect", "anything"])
@@ -333,6 +361,7 @@ def test_inspect_on_empty_hermes_home_returns_nonzero(
 # ---------------------------------------------------------------------------
 # clear
 # ---------------------------------------------------------------------------
+
 
 def test_clear_with_yes_removes_skills_and_metadata(
     monkeypatch: pytest.MonkeyPatch,
@@ -348,9 +377,15 @@ def test_clear_with_yes_removes_skills_and_metadata(
     plugin_dest = hermes_home / "skills" / "sample-plugin"
     assert plugin_dest.exists()
 
-    rc = cli.main([
-        "--hermes-home", str(hermes_home), "clear", "sample-plugin", "--yes",
-    ])
+    rc = cli.main(
+        [
+            "--hermes-home",
+            str(hermes_home),
+            "clear",
+            "sample-plugin",
+            "--yes",
+        ]
+    )
     assert rc == 0
     assert not plugin_dest.exists()
 
@@ -406,11 +441,18 @@ def test_clear_without_yes_proceeds_on_accept(
 
 
 def test_clear_idempotent_for_unknown_plugin(
-    capsys: pytest.CaptureFixture[str], hermes_home: Path,
+    capsys: pytest.CaptureFixture[str],
+    hermes_home: Path,
 ) -> None:
-    rc = cli.main([
-        "--hermes-home", str(hermes_home), "clear", "ghost", "--yes",
-    ])
+    rc = cli.main(
+        [
+            "--hermes-home",
+            str(hermes_home),
+            "clear",
+            "ghost",
+            "--yes",
+        ]
+    )
     assert rc == 0
     assert "not installed" in capsys.readouterr().out
 
@@ -418,6 +460,7 @@ def test_clear_idempotent_for_unknown_plugin(
 # ---------------------------------------------------------------------------
 # Hermes home resolution
 # ---------------------------------------------------------------------------
+
 
 def test_env_var_override(
     monkeypatch: pytest.MonkeyPatch,
@@ -435,7 +478,8 @@ def test_env_var_override(
 
 
 def test_flag_wins_over_env(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
     env_home = tmp_path / "env-home"
     flag_home = tmp_path / "flag-home"
@@ -451,7 +495,8 @@ def test_default_when_no_flag_or_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_list_against_nonexistent_hermes_home(
-    capsys: pytest.CaptureFixture[str], tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
     # Gap coverage: --hermes-home pointing at a path that doesn't exist
     # should not crash; `list` should report empty.

@@ -1,0 +1,43 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build wheel + sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: build
+    # The `release` environment gates this job behind a required reviewer
+    # in GitHub settings. Also scopes the OIDC trust on the PyPI side so
+    # only this environment can mint publish tokens.
+    environment:
+      name: release
+      url: https://pypi.org/p/hermes-plugin-sync
+    permissions:
+      # OIDC: PyPI Trusted Publisher authenticates GitHub Actions by this
+      # ID token. No long-lived PYPI_API_TOKEN secret is required.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

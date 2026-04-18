@@ -44,9 +44,7 @@ def test_populated_manifest_roundtrip(hermes_home: Path) -> None:
     assert load_manifest(hermes_home) == payload
 
 
-def test_corrupt_manifest_returns_empty_and_warns(
-    hermes_home: Path, caplog
-) -> None:
+def test_corrupt_manifest_returns_empty_and_warns(hermes_home: Path, caplog) -> None:
     path = manifest_path(hermes_home)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("{not json")

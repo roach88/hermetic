@@ -29,8 +29,7 @@ from typing import Any
 
 import yaml
 
-from . import __version__
-from . import core
+from . import __version__, core
 from .manifest import (
     META_KEY,
     entries_for_plugin,
@@ -45,6 +44,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Path resolution
 # ---------------------------------------------------------------------------
+
 
 def _resolve_hermes_home(flag_value: str | None) -> Path:
     """Resolve hermes_home from CLI flag, env var, or default.
@@ -64,6 +64,7 @@ def _resolve_hermes_home(flag_value: str | None) -> Path:
 # ---------------------------------------------------------------------------
 # Subcommand implementations
 # ---------------------------------------------------------------------------
+
 
 def _cmd_sync(args: argparse.Namespace, hermes_home: Path) -> int:
     """Loop over configured plugins. Continue-on-error per plugin (D2=A)."""
@@ -85,8 +86,7 @@ def _cmd_sync(args: argparse.Namespace, hermes_home: Path) -> int:
         plugins = raw["plugins"]
     else:
         print(
-            f"error: {config_path}: expected a list of plugins or a mapping "
-            "with a 'plugins' key",
+            f"error: {config_path}: expected a list of plugins or a mapping with a 'plugins' key",
             file=sys.stderr,
         )
         return 2
@@ -98,9 +98,7 @@ def _cmd_sync(args: argparse.Namespace, hermes_home: Path) -> int:
         name = cfg.get("name", "<unnamed>") if isinstance(cfg, dict) else "<invalid>"
         try:
             if not isinstance(cfg, dict) or "name" not in cfg or "git" not in cfg:
-                raise ValueError(
-                    f"plugin entry missing required 'name' or 'git' field: {cfg!r}"
-                )
+                raise ValueError(f"plugin entry missing required 'name' or 'git' field: {cfg!r}")
             logger.info("Syncing plugin: %s", name)
             core.sync_plugin(cfg, hermes_home, manifest)
         except Exception as exc:
@@ -148,14 +146,16 @@ def _aggregate_plugin_view(
     for name in all_names:
         c = counts.get(name, {"skill": 0, "agent": 0})
         meta = (meta_block or {}).get(name) or {}
-        rows.append({
-            "name": name,
-            "skill_count": c["skill"],
-            "agent_count": c["agent"],
-            "last_synced": meta.get("last_synced"),
-            "git": meta.get("git"),
-            "branch": meta.get("branch"),
-        })
+        rows.append(
+            {
+                "name": name,
+                "skill_count": c["skill"],
+                "agent_count": c["agent"],
+                "last_synced": meta.get("last_synced"),
+                "git": meta.get("git"),
+                "branch": meta.get("branch"),
+            }
+        )
     return rows
 
 
@@ -213,11 +213,13 @@ def _cmd_inspect(args: argparse.Namespace, hermes_home: Path) -> int:
             # JSON-on-stdout-with-nonzero-exit (documented choice): keeps the
             # stdout stream parseable even on errors, matching how most JSON
             # CLIs behave (e.g. `gh ... --json`).
-            print(json.dumps(
-                {"error": "plugin not found", "installed": installed},
-                indent=2,
-                sort_keys=True,
-            ))
+            print(
+                json.dumps(
+                    {"error": "plugin not found", "installed": installed},
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
         else:
             print(f"error: plugin not found: {plugin}", file=sys.stderr)
             if installed:
@@ -230,13 +232,15 @@ def _cmd_inspect(args: argparse.Namespace, hermes_home: Path) -> int:
     entry_list = []
     for key in sorted(entries):
         e = entries[key]
-        entry_list.append({
-            "key": key,
-            "kind": e.get("kind"),
-            "origin_hash": e.get("origin_hash"),
-            "source_path": e.get("source_path"),
-            "dest_path": str(skills_dir / key),
-        })
+        entry_list.append(
+            {
+                "key": key,
+                "kind": e.get("kind"),
+                "origin_hash": e.get("origin_hash"),
+                "source_path": e.get("source_path"),
+                "dest_path": str(skills_dir / key),
+            }
+        )
 
     payload = {
         "name": plugin,
@@ -305,6 +309,7 @@ def _cmd_clear(args: argparse.Namespace, hermes_home: Path) -> int:
 # ---------------------------------------------------------------------------
 # Argparse wiring
 # ---------------------------------------------------------------------------
+
 
 def _build_parser() -> argparse.ArgumentParser:
     # Global flags live on a parent parser so they work BOTH before and after
@@ -386,7 +391,8 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_clear.add_argument("plugin", help="Plugin name.")
     p_clear.add_argument(
-        "--yes", "-y",
+        "--yes",
+        "-y",
         action="store_true",
         help="Skip the confirmation prompt.",
     )

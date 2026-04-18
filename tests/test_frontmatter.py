@@ -53,7 +53,7 @@ def test_render_roundtrip() -> None:
 
 def test_render_strips_leading_body_whitespace() -> None:
     rendered = render_frontmatter({"a": 1}, "\n\n\nhello")
-    assert "---\na: 1\n---\n\nhello" == rendered
+    assert rendered == "---\na: 1\n---\n\nhello"
 
 
 def test_sha256_bytes_is_stable() -> None:

@@ -36,6 +36,7 @@ test = [
 ]
 dev = [
     "mypy>=1.10",
+    "ruff>=0.6",
     "types-PyYAML>=6",
 ]
 
@@ -54,4 +55,48 @@ addopts = "-ra --strict-markers -m 'not live'"
 markers = [
     "live: requires network, default-skipped",
     "integration: local integration test, default-run",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["tests/fixtures/legacy_plugin_sync_v0.py"]
+
+[tool.ruff.lint]
+# Opinionated-but-boring: flag common mistakes, enforce imports, modernize
+# legacy syntax. Avoids style-for-style's-sake rules (D docstrings, N naming)
+# so lint failures are almost always real bugs or stale idioms.
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests are allowed loose asserts and long lines in fixtures.
+"tests/**" = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+# src layout: tell mypy where the package lives so imports resolve.
+mypy_path = "src"
+packages = ["hermes_plugin_sync"]
+
+[tool.coverage.run]
+source = ["hermes_plugin_sync"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
 ]

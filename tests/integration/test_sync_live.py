@@ -13,11 +13,9 @@ tip, or refresh the constant when the old commit becomes too stale to keep
 
 from __future__ import annotations
 
-import io
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -71,6 +69,7 @@ def live_synced_home(tmp_path: Path) -> Path:
 
     # Persist the manifest so test (b) can exercise the CLI ``inspect`` path.
     from hermes_plugin_sync.manifest import save_manifest
+
     save_manifest(hermes_home, manifest)
     return hermes_home
 
@@ -106,12 +105,15 @@ def test_live_inspect_json(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """CLI ``inspect <plugin> --json`` reflects the live-synced state."""
-    rc = cli.main([
-        "--hermes-home", str(live_synced_home),
-        "inspect",
-        _LIVE_PLUGIN_NAME,
-        "--json",
-    ])
+    rc = cli.main(
+        [
+            "--hermes-home",
+            str(live_synced_home),
+            "inspect",
+            _LIVE_PLUGIN_NAME,
+            "--json",
+        ]
+    )
     assert rc == 0
     out = capsys.readouterr().out
     payload = json.loads(out)

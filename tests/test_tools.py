@@ -21,7 +21,7 @@ def test_tool_map_contents_match_source_script() -> None:
 
 
 def test_tool_drop_contains_task() -> None:
-    assert TOOL_DROP == {"Task"}
+    assert {"Task"} == TOOL_DROP
 
 
 def test_translate_known_comma_string() -> None:

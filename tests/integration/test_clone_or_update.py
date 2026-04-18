@@ -87,6 +87,7 @@ def test_resync_different_branch_swaps_tree(
     # experimental branch replaces that file with ``only_experimental.txt``.
     # Wipe the worktree so the branch's tree is exactly one file.
     from .conftest import clear_worktree
+
     clear_worktree(remote.worktree)
     _write(remote, "only_experimental.txt", "experimental")
     remote.commit(branch="experimental", message="experimental tip")

@@ -42,9 +42,7 @@ def entries_for_plugin(
     return {
         key: dict(value)
         for key, value in manifest.items()
-        if key != META_KEY
-        and isinstance(value, dict)
-        and value.get("plugin") == plugin_name
+        if key != META_KEY and isinstance(value, dict) and value.get("plugin") == plugin_name
     }
 
 

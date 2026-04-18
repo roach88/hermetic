@@ -18,9 +18,10 @@ import logging
 import os
 import shutil
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import pytest
 import yaml
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Git helpers (isolated from user gitconfig)
 # ---------------------------------------------------------------------------
+
 
 def _isolated_git_env(tmp_home: Path) -> dict[str, str]:
     """Return an env that insulates git from the user's global config.
@@ -60,6 +62,7 @@ def _run_git(args: list[str], cwd: Path, env: dict[str, str]) -> None:
 # ---------------------------------------------------------------------------
 # GitRemote — the object returned by the factory
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class GitRemote:
@@ -112,6 +115,7 @@ class GitRemote:
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def hermes_home(tmp_path: Path) -> Path:
@@ -192,6 +196,7 @@ def config_yaml(tmp_path: Path) -> Callable[..., Path]:
 # ---------------------------------------------------------------------------
 # Small helpers
 # ---------------------------------------------------------------------------
+
 
 def _copy_tree_into(src: Path, dest: Path) -> None:
     """Copy the contents of ``src/*`` into ``dest``, merging with what's there.

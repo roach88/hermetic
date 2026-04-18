@@ -14,7 +14,6 @@ Scope (three scenarios, matching the Unit 4 plan):
 
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 from typing import Any
@@ -40,6 +39,7 @@ pytestmark = pytest.mark.integration
 # Helpers for constructing inline skill/agent trees
 # ---------------------------------------------------------------------------
 
+
 def _write_skill(worktree: Path, name: str, body: str = "body") -> None:
     skill_dir = worktree / "skills" / name
     skill_dir.mkdir(parents=True, exist_ok=True)
@@ -60,6 +60,7 @@ def _write_agent(worktree: Path, category: str, name: str) -> None:
 # ---------------------------------------------------------------------------
 # (a) happy path
 # ---------------------------------------------------------------------------
+
 
 def test_happy_path_populates_skills_agents_and_manifest(
     tmp_git_remote: Any,
@@ -106,6 +107,7 @@ def test_happy_path_populates_skills_agents_and_manifest(
 # (b) idempotency: second sync is a no-op on disk
 # ---------------------------------------------------------------------------
 
+
 def test_resync_is_idempotent_mtimes_unchanged(
     tmp_git_remote: Any,
     sample_plugin_src: Path,
@@ -137,10 +139,12 @@ def test_resync_is_idempotent_mtimes_unchanged(
     core.sync_plugin(cfg, hermes_home, manifest2)
     save_manifest(hermes_home, manifest2)
 
-    assert skill_md.stat().st_mtime_ns == first_skill_mtime, \
+    assert skill_md.stat().st_mtime_ns == first_skill_mtime, (
         "skill SKILL.md was rewritten on a no-op resync"
-    assert agent_md.stat().st_mtime_ns == first_agent_mtime, \
+    )
+    assert agent_md.stat().st_mtime_ns == first_agent_mtime, (
         "agent SKILL.md was rewritten on a no-op resync"
+    )
 
     # Per-entry rows are byte-identical. _plugins.last_synced is allowed to
     # move forward (it's rewritten on every successful run by design), so
@@ -160,6 +164,7 @@ def test_resync_is_idempotent_mtimes_unchanged(
 # ---------------------------------------------------------------------------
 # (c) branch swap — prune removed, add new, preserve common
 # ---------------------------------------------------------------------------
+
 
 def test_branch_swap_prunes_and_preserves_common_entries(
     tmp_git_remote: Any,
@@ -229,8 +234,9 @@ def test_branch_swap_prunes_and_preserves_common_entries(
     assert (agents_root / "bar" / "SKILL.md").is_file()
     # Common + identical: beta kept in place, mtime unchanged.
     assert beta_path.is_file()
-    assert beta_path.stat().st_mtime_ns == beta_mtime_before, \
+    assert beta_path.stat().st_mtime_ns == beta_mtime_before, (
         "beta SKILL.md was rewritten even though content is identical across branches"
+    )
 
     # Manifest bookkeeping matches disk.
     entries = entries_for_plugin(manifest, plugin)

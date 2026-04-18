@@ -38,6 +38,7 @@ def _plugins_dir(hermes_home: Path) -> Path:
 # Skill migration
 # ---------------------------------------------------------------------------
 
+
 def migrate_skill(
     src_skill_dir: Path,
     dest_skill_dir: Path,
@@ -92,6 +93,7 @@ def migrate_skill(
 # ---------------------------------------------------------------------------
 # Agent translation (Claude Code agent → Hermes delegation skill)
 # ---------------------------------------------------------------------------
+
 
 def build_delegation_skill(
     plugin: str,
@@ -191,6 +193,7 @@ def migrate_agent(
 # Cleanup (removed-upstream, unmodified-local)
 # ---------------------------------------------------------------------------
 
+
 def prune_removed(
     plugin: str,
     seen_keys: set[str],
@@ -206,7 +209,8 @@ def prune_removed(
     # Skip the reserved META_KEY row - its value shape is plugin->meta, not
     # the per-entry shape we filter on. Also tolerate non-dict junk defensively.
     stale = [
-        k for k, v in manifest.items()
+        k
+        for k, v in manifest.items()
         if k != META_KEY
         and isinstance(v, dict)
         and v.get("plugin") == plugin
@@ -230,6 +234,7 @@ def prune_removed(
 # ---------------------------------------------------------------------------
 # Plugin processing
 # ---------------------------------------------------------------------------
+
 
 def sync_plugin(
     plugin_cfg: dict[str, Any],

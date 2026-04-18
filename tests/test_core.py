@@ -28,6 +28,7 @@ def _no_op_clone(*args: object, **kwargs: object) -> None:
 # build_delegation_skill
 # ---------------------------------------------------------------------------
 
+
 def test_build_delegation_skill_shape() -> None:
     cc_fm = {
         "name": "refactorer",
@@ -70,9 +71,8 @@ def test_build_delegation_skill_unknown_tools_warning_in_body() -> None:
 # migrate_skill
 # ---------------------------------------------------------------------------
 
-def test_migrate_skill_first_run_copies_tree(
-    hermes_home: Path, sample_plugin_src: Path
-) -> None:
+
+def test_migrate_skill_first_run_copies_tree(hermes_home: Path, sample_plugin_src: Path) -> None:
     src = sample_plugin_src / "skills" / "hello-skill"
     dest = hermes_home / "skills" / "sample-plugin" / "hello-skill"
     dest.parent.mkdir(parents=True)
@@ -173,6 +173,7 @@ def test_migrate_skill_missing_skill_md_skips(hermes_home: Path, tmp_path: Path)
 # migrate_agent
 # ---------------------------------------------------------------------------
 
+
 def test_migrate_agent_translates_to_delegation_skill(
     hermes_home: Path, sample_plugin_src: Path
 ) -> None:
@@ -192,9 +193,7 @@ def test_migrate_agent_translates_to_delegation_skill(
     assert manifest[key]["kind"] == "agent"
 
 
-def test_migrate_agent_idempotent(
-    hermes_home: Path, sample_plugin_src: Path
-) -> None:
+def test_migrate_agent_idempotent(hermes_home: Path, sample_plugin_src: Path) -> None:
     src = sample_plugin_src / "agents" / "code" / "refactorer.md"
     dest = hermes_home / "skills" / "sample-plugin" / "agents" / "refactorer"
     dest.parent.mkdir(parents=True)
@@ -213,6 +212,7 @@ def test_migrate_agent_idempotent(
 # sync_plugin (integration)
 # ---------------------------------------------------------------------------
 
+
 def test_sync_plugin_end_to_end(
     monkeypatch: pytest.MonkeyPatch,
     hermes_home: Path,
@@ -226,16 +226,10 @@ def test_sync_plugin_end_to_end(
 
     skills_dir = hermes_home / "skills"
     assert (skills_dir / "sample-plugin" / "hello-skill" / "SKILL.md").exists()
-    assert (
-        skills_dir / "sample-plugin" / "hello-skill" / "references" / "greetings.md"
-    ).exists()
+    assert (skills_dir / "sample-plugin" / "hello-skill" / "references" / "greetings.md").exists()
     assert (skills_dir / "sample-plugin" / "standalone-skill" / "SKILL.md").exists()
-    assert (
-        skills_dir / "sample-plugin" / "agents" / "refactorer" / "SKILL.md"
-    ).exists()
-    assert (
-        skills_dir / "sample-plugin" / "agents" / "literature-scout" / "SKILL.md"
-    ).exists()
+    assert (skills_dir / "sample-plugin" / "agents" / "refactorer" / "SKILL.md").exists()
+    assert (skills_dir / "sample-plugin" / "agents" / "literature-scout" / "SKILL.md").exists()
 
     # Manifest entries cover both skills + both agents.
     assert "sample-plugin/hello-skill" in manifest
@@ -255,9 +249,7 @@ def test_sync_plugin_idempotent_no_mtime_change(
 
     sync_plugin(plugin_cfg, hermes_home, manifest)
     skill_md = hermes_home / "skills" / "sample-plugin" / "hello-skill" / "SKILL.md"
-    agent_md = (
-        hermes_home / "skills" / "sample-plugin" / "agents" / "refactorer" / "SKILL.md"
-    )
+    agent_md = hermes_home / "skills" / "sample-plugin" / "agents" / "refactorer" / "SKILL.md"
     skill_mtime = skill_md.stat().st_mtime_ns
     agent_mtime = agent_md.stat().st_mtime_ns
 
@@ -283,9 +275,7 @@ def test_prune_removed_drops_upstream_deletions(
     sync_plugin(plugin_cfg, hermes_home, manifest)
 
     assert "sample-plugin/standalone-skill" not in manifest
-    assert not (
-        hermes_home / "skills" / "sample-plugin" / "standalone-skill"
-    ).exists()
+    assert not (hermes_home / "skills" / "sample-plugin" / "standalone-skill").exists()
 
 
 def test_prune_removed_preserves_user_modified(
@@ -400,9 +390,7 @@ def test_sync_plugin_with_subdir(
     manifest: dict[str, dict] = {}
     sync_plugin(cfg, hermes_home, manifest)
 
-    assert (
-        hermes_home / "skills" / "subdir-plugin" / "hello-skill" / "SKILL.md"
-    ).exists()
+    assert (hermes_home / "skills" / "subdir-plugin" / "hello-skill" / "SKILL.md").exists()
 
 
 def test_sync_plugin_warns_on_zero_migrations(
@@ -437,7 +425,6 @@ def test_sync_plugin_warns_on_zero_migrations(
         sync_plugin(cfg, hermes_home, manifest)
 
     messages = [r.getMessage() for r in caplog.records if r.levelno >= logging.WARNING]
-    assert any(
-        "migrated 0 skills/agents" in m and "subdir" in m
-        for m in messages
-    ), f"expected zero-migration warning, got: {messages}"
+    assert any("migrated 0 skills/agents" in m and "subdir" in m for m in messages), (
+        f"expected zero-migration warning, got: {messages}"
+    )
