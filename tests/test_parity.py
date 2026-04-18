@@ -191,6 +191,134 @@ def test_manifest_paths_normalized_for_comparison() -> None:
     assert out["k"]["source_path"] == "sample/skills/x"
 
 
+def test_branch_swap_parity(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    fixture_plugin: Path,
+) -> None:
+    """Prune+add behavior on a simulated branch swap must match the legacy script.
+
+    ``clone_or_update`` is stubbed out in parity tests, so we simulate a
+    branch swap by replacing the staged plugin tree in-place between two
+    ``sync_plugin`` calls. The invariant we lock down: legacy and new
+    implementations produce byte-identical results after the swap — same
+    files pruned, same files added, same manifest rows, same contents.
+
+    This is a migrator-core-level test; the git-layer fix for the real
+    branch-swap bug is exercised separately in the integration suite.
+    """
+    plugin_name = "sample-plugin"
+    plugin_cfg = {
+        "name": plugin_name,
+        "git": "https://example.invalid/x.git",
+        "branch": "main",
+    }
+
+    # Build a second, disjoint plugin tree: drops ``standalone-skill`` and
+    # the ``refactorer`` agent, adds a fresh skill + agent. ``hello-skill``
+    # is carried over verbatim so the common-path branch is exercised too.
+    swap_src = tmp_path / "swap_src"
+    swap_src.mkdir()
+    shutil.copytree(
+        fixture_plugin / "skills" / "hello-skill",
+        swap_src / "skills" / "hello-skill",
+    )
+    fresh_skill = swap_src / "skills" / "fresh-skill"
+    fresh_skill.mkdir(parents=True)
+    (fresh_skill / "SKILL.md").write_text(
+        "---\nname: fresh-skill\ndescription: New on the swap branch.\n"
+        "version: 1.0.0\n---\n\nfresh body\n"
+    )
+    fresh_agent_dir = swap_src / "agents" / "research"
+    fresh_agent_dir.mkdir(parents=True)
+    (fresh_agent_dir / "explorer.md").write_text(
+        "---\nname: explorer\ndescription: Swap-branch agent.\n"
+        "tools:\n  - Read\n  - Grep\n---\n\nYou are explorer.\n"
+    )
+
+    def _run_both(src: Path) -> tuple[dict[str, str], dict[str, dict[str, Any]], dict[str, str], dict[str, dict[str, Any]]]:
+        """Run legacy + new against ``src`` and return (old_tree, old_manifest_norm, new_tree, new_manifest_norm)."""
+        # ---- legacy ----
+        legacy = _import_legacy()
+        old_root = tmp_path / "old"
+        old_skills = old_root / "skills"
+        old_plugins = old_root / "plugins"
+        old_skills.mkdir(parents=True, exist_ok=True)
+        old_plugins.mkdir(parents=True, exist_ok=True)
+
+        monkeypatch.setattr(legacy, "SKILLS_DIR", old_skills)
+        monkeypatch.setattr(legacy, "PLUGINS_DIR", old_plugins)
+        monkeypatch.setattr(legacy, "MANIFEST", old_skills / ".plugin_sync_manifest.json")
+        monkeypatch.setattr(legacy, "clone_or_update", lambda url, branch, dest: None)
+
+        old_staged = old_plugins / plugin_name
+        if old_staged.exists():
+            shutil.rmtree(old_staged)
+        shutil.copytree(src, old_staged)
+        (old_staged / ".git").mkdir(exist_ok=True)
+
+        # Legacy ``load_manifest`` reads from its module-level ``MANIFEST``
+        # constant (no args) — picks up whatever the previous call persisted.
+        old_manifest = legacy.load_manifest()
+        legacy.sync_plugin(plugin_cfg, old_manifest)
+        legacy.save_manifest(old_manifest)
+
+        # ---- new ----
+        new_root = tmp_path / "new"
+        new_skills = new_root / "skills"
+        new_plugins = new_root / "plugins"
+        new_skills.mkdir(parents=True, exist_ok=True)
+        new_plugins.mkdir(parents=True, exist_ok=True)
+
+        monkeypatch.setattr(new_core, "clone_or_update", lambda url, branch, dest: None)
+
+        new_staged = new_plugins / plugin_name
+        if new_staged.exists():
+            shutil.rmtree(new_staged)
+        shutil.copytree(src, new_staged)
+        (new_staged / ".git").mkdir(exist_ok=True)
+
+        new_manifest = load_manifest(new_root)
+        new_sync_plugin(plugin_cfg, new_root, new_manifest)
+        from hermes_plugin_sync.manifest import save_manifest
+
+        save_manifest(new_root, new_manifest)
+
+        def _scan(root: Path) -> dict[str, str]:
+            result = _hash_dir(root)
+            result.pop(".plugin_sync_manifest.json", None)
+            return result
+
+        new_manifest_loaded = load_manifest(new_root)
+        new_manifest_loaded.pop("_plugins", None)
+        return (
+            _scan(old_skills),
+            _normalize_manifest_paths(old_manifest, old_plugins),
+            _scan(new_skills),
+            _normalize_manifest_paths(new_manifest_loaded, new_plugins),
+        )
+
+    # First sync: original fixture. Establishes baseline in both homes.
+    old_tree_1, old_mf_1, new_tree_1, new_mf_1 = _run_both(fixture_plugin)
+    assert old_tree_1 == new_tree_1
+    assert old_mf_1 == new_mf_1
+
+    # Second sync: swap tree in place. Both implementations must prune the
+    # same entries and add the new ones in byte-identical shape.
+    old_tree_2, old_mf_2, new_tree_2, new_mf_2 = _run_both(swap_src)
+    assert old_tree_2 == new_tree_2, (
+        f"Post-swap tree diff:\n"
+        f"old-only: {sorted(set(old_tree_2) - set(new_tree_2))}\n"
+        f"new-only: {sorted(set(new_tree_2) - set(old_tree_2))}\n"
+        f"differing: {[k for k in old_tree_2 if k in new_tree_2 and old_tree_2[k] != new_tree_2[k]]}"
+    )
+    assert old_mf_2 == new_mf_2
+
+    # Sanity: the swap actually changed something (guards against a silent
+    # regression where both trees happen to equal the baseline).
+    assert old_tree_1 != old_tree_2, "swap produced identical output to baseline"
+
+
 def test_parse_frontmatter_parity() -> None:
     # Defensive: parse_frontmatter is the most-trafficked helper. Lock it
     # against the legacy implementation directly.
