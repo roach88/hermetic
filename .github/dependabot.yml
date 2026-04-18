@@ -4,6 +4,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Only auto-PR minor + patch bumps, grouped into one PR.
+    # Major bumps are handled manually so breaking changes get real review.
     groups:
       python-dev-deps:
         patterns:
@@ -11,6 +13,10 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
@@ -23,3 +29,7 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
