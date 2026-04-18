@@ -276,6 +276,22 @@ def sync_plugin(
             migrate_agent(agent_md, dest, manifest, plugin, hermes_home)
             seen_keys.add(str(dest.relative_to(skills_dir)))
 
+    # Warn when a sync produced no migrations: almost always a misconfigured
+    # ``subdir`` (monorepo plugin where skills/agents live under
+    # ``plugins/<name>/`` rather than at the repo root). Silent 0/0 syncs
+    # return exit 0 and look successful, which is how the issue went
+    # unnoticed against compound-engineering-plugin.
+    if not seen_keys:
+        logger.warning(
+            "plugin '%s' migrated 0 skills/agents. Looked for %s/ and %s/. "
+            "If this is a monorepo, set 'subdir' in your config "
+            "(e.g. subdir: plugins/%s).",
+            plugin,
+            skills_src,
+            agents_src,
+            plugin,
+        )
+
     prune_removed(plugin, seen_keys, manifest, hermes_home)
 
     # Record per-plugin metadata only after a successful run so the timestamp

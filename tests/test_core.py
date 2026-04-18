@@ -403,3 +403,41 @@ def test_sync_plugin_with_subdir(
     assert (
         hermes_home / "skills" / "subdir-plugin" / "hello-skill" / "SKILL.md"
     ).exists()
+
+
+def test_sync_plugin_warns_on_zero_migrations(
+    monkeypatch: pytest.MonkeyPatch,
+    hermes_home: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A plugin with no skills/ or agents/ at the configured root must WARN.
+
+    This is the ``subdir:`` misconfiguration footgun: silently succeeding
+    with zero migrations looks like a successful sync but leaves the user
+    staring at an empty tree wondering why. Surface it as a warning, with
+    the searched paths included so the fix is obvious.
+    """
+    monkeypatch.setattr(core, "clone_or_update", _no_op_clone)
+
+    # Stage a repo that looks superficially like a plugin but has no
+    # skills/ or agents/ at its root — e.g. a monorepo where the real
+    # plugin tree lives under plugins/<name>/.
+    repo = hermes_home / "plugins" / "empty-root"
+    (repo / "plugins" / "empty-root").mkdir(parents=True)
+    (repo / ".git").mkdir()
+    (repo / "README.md").write_text("monorepo, see plugins/")
+
+    cfg = {
+        "name": "empty-root",
+        "git": "https://example.invalid/x.git",
+        "branch": "main",
+    }
+    manifest: dict[str, dict] = {}
+    with caplog.at_level(logging.WARNING, logger="hermes_plugin_sync.core"):
+        sync_plugin(cfg, hermes_home, manifest)
+
+    messages = [r.getMessage() for r in caplog.records if r.levelno >= logging.WARNING]
+    assert any(
+        "migrated 0 skills/agents" in m and "subdir" in m
+        for m in messages
+    ), f"expected zero-migration warning, got: {messages}"
