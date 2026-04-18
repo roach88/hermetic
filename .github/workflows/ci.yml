@@ -20,9 +20,11 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      - run: uv pip install --system ruff
-      - run: ruff check src tests
-      - run: ruff format --check src tests
+          enable-cache: true
+      - run: uv venv
+      - run: uv pip install ruff
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
 
   typecheck:
     name: Typecheck (ty)
@@ -32,10 +34,12 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      - run: uv pip install --system -e ".[test,dev]"
+          enable-cache: true
+      - run: uv venv
+      - run: uv pip install -e ".[test,dev]"
       # `error-on-warning` is set in [tool.ty.terminal] so the run fails
       # on any diagnostic, matching the strictness we had with mypy.
-      - run: ty check src/hermetic
+      - run: uv run ty check src/hermetic
 
   test:
     name: Test (py${{ matrix.python }} / ${{ matrix.os }})
@@ -59,8 +63,10 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: uv pip install --system -e ".[test]"
-      - run: pytest -v
+          enable-cache: true
+      - run: uv venv
+      - run: uv pip install -e ".[test]"
+      - run: uv run pytest -v
 
   coverage:
     name: Coverage (gate at 80%)
@@ -71,5 +77,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      - run: uv pip install --system -e ".[test]"
-      - run: pytest --cov=hermetic --cov-report=term-missing --cov-fail-under=80
+          enable-cache: true
+      - run: uv venv
+      - run: uv pip install -e ".[test]"
+      - run: uv run pytest --cov=hermetic --cov-report=term-missing --cov-fail-under=80
