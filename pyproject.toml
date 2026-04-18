@@ -34,6 +34,10 @@ test = [
     "pytest-cov>=5",
     "pytest-mock>=3.12",
 ]
+dev = [
+    "mypy>=1.10",
+    "types-PyYAML>=6",
+]
 
 [project.scripts]
 hermes-plugin-sync = "hermes_plugin_sync.cli:main"
@@ -43,3 +47,7 @@ path = "src/hermes_plugin_sync/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hermes_plugin_sync"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
