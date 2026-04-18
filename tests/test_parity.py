@@ -18,9 +18,9 @@ from typing import Any
 
 import pytest
 
-from hermes_plugin_sync import core as new_core
-from hermes_plugin_sync import sync_plugin as new_sync_plugin
-from hermes_plugin_sync.manifest import load_manifest
+from hermetic import core as new_core
+from hermetic import sync_plugin as new_sync_plugin
+from hermetic.manifest import load_manifest
 
 LEGACY_PATH = Path(__file__).parent / "fixtures" / "legacy_plugin_sync_v0.py"
 
@@ -123,7 +123,7 @@ def test_outputs_match_old_script_byte_for_byte(
 
     new_manifest: dict[str, dict[str, Any]] = {}
     new_sync_plugin(plugin_cfg, new_root, new_manifest)
-    from hermes_plugin_sync.manifest import save_manifest
+    from hermetic.manifest import save_manifest
 
     save_manifest(new_root, new_manifest)
 
@@ -283,7 +283,7 @@ def test_branch_swap_parity(
 
         new_manifest = load_manifest(new_root)
         new_sync_plugin(plugin_cfg, new_root, new_manifest)
-        from hermes_plugin_sync.manifest import save_manifest
+        from hermetic.manifest import save_manifest
 
         save_manifest(new_root, new_manifest)
 
@@ -328,7 +328,7 @@ def test_parse_frontmatter_parity() -> None:
     legacy = _import_legacy()
     text = "---\nname: x\ndescription: y\ntools:\n  - Read\n  - Bash\n---\nBody content here."
     legacy_fm, legacy_body = legacy.parse_frontmatter(text)
-    from hermes_plugin_sync.frontmatter import parse_frontmatter as new_parse
+    from hermetic.frontmatter import parse_frontmatter as new_parse
 
     new_fm, new_body = new_parse(text)
     assert legacy_fm == new_fm

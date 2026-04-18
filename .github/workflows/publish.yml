@@ -30,7 +30,7 @@ jobs:
     # only this environment can mint publish tokens.
     environment:
       name: release
-      url: https://pypi.org/p/hermes-plugin-sync
+      url: https://pypi.org/p/hermetic-cli
     permissions:
       # OIDC: PyPI Trusted Publisher authenticates GitHub Actions by this
       # ID token. No long-lived PYPI_API_TOKEN secret is required.

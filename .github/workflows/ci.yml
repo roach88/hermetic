@@ -35,7 +35,7 @@ jobs:
       - run: uv pip install --system -e ".[test,dev]"
       # `error-on-warning` is set in [tool.ty.terminal] so the run fails
       # on any diagnostic, matching the strictness we had with mypy.
-      - run: ty check src/hermes_plugin_sync
+      - run: ty check src/hermetic
 
   test:
     name: Test (py${{ matrix.python }} / ${{ matrix.os }})
@@ -72,4 +72,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv pip install --system -e ".[test]"
-      - run: pytest --cov=hermes_plugin_sync --cov-report=term-missing --cov-fail-under=80
+      - run: pytest --cov=hermetic --cov-report=term-missing --cov-fail-under=80

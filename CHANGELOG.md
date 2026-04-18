@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `hermes-plugin-sync` will be documented in this file.
+All notable changes to `hermetic` (published on PyPI as `hermetic-cli`) will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)

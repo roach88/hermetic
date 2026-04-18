@@ -1,10 +1,10 @@
-"""Tests for ``hermes_plugin_sync.manifest``."""
+"""Tests for ``hermetic.manifest``."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from hermes_plugin_sync.manifest import (
+from hermetic.manifest import (
     load_manifest,
     manifest_path,
     save_manifest,
@@ -50,7 +50,7 @@ def test_corrupt_manifest_returns_empty_and_warns(hermes_home: Path, caplog) -> 
     path.write_text("{not json")
     import logging
 
-    with caplog.at_level(logging.WARNING, logger="hermes_plugin_sync.manifest"):
+    with caplog.at_level(logging.WARNING, logger="hermetic.manifest"):
         result = load_manifest(hermes_home)
     assert result == {}
     assert any("corrupt" in rec.message.lower() for rec in caplog.records)

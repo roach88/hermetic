@@ -19,7 +19,7 @@ from typing import Any
 
 import pytest
 
-from hermes_plugin_sync.git import clone_or_update
+from hermetic.git import clone_or_update
 
 from .conftest import GitRemote
 

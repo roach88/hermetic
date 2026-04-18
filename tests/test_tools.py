@@ -1,8 +1,8 @@
-"""Tests for ``hermes_plugin_sync.tools``."""
+"""Tests for ``hermetic.tools``."""
 
 from __future__ import annotations
 
-from hermes_plugin_sync.tools import TOOL_DROP, TOOL_MAP, translate_tools
+from hermetic.tools import TOOL_DROP, TOOL_MAP, translate_tools
 
 
 def test_tool_map_contents_match_source_script() -> None:

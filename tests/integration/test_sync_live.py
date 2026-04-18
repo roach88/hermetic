@@ -21,7 +21,7 @@ from typing import Any
 
 import pytest
 
-from hermes_plugin_sync import cli, core
+from hermetic import cli, core
 
 # Pinned 2026-04-18 — refresh if live tests go stale.
 # Resolved via: git ls-remote https://github.com/EveryInc/compound-engineering-plugin.git refs/heads/main
@@ -68,7 +68,7 @@ def live_synced_home(tmp_path: Path) -> Path:
         )
 
     # Persist the manifest so test (b) can exercise the CLI ``inspect`` path.
-    from hermes_plugin_sync.manifest import save_manifest
+    from hermetic.manifest import save_manifest
 
     save_manifest(hermes_home, manifest)
     return hermes_home
@@ -76,7 +76,7 @@ def live_synced_home(tmp_path: Path) -> Path:
 
 def test_live_clone_and_sync(live_synced_home: Path) -> None:
     """Live clone of compound-engineering-plugin@main populates the manifest."""
-    from hermes_plugin_sync.manifest import (
+    from hermetic.manifest import (
         META_KEY,
         entries_for_plugin,
         load_manifest,

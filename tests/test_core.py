@@ -1,4 +1,4 @@
-"""Tests for ``hermes_plugin_sync.core``."""
+"""Tests for ``hermetic.core``."""
 
 from __future__ import annotations
 
@@ -8,15 +8,15 @@ from pathlib import Path
 
 import pytest
 
-from hermes_plugin_sync import core
-from hermes_plugin_sync.core import (
+from hermetic import core
+from hermetic.core import (
     build_delegation_skill,
     migrate_agent,
     migrate_skill,
     prune_removed,
     sync_plugin,
 )
-from hermes_plugin_sync.frontmatter import parse_frontmatter, sha256_file
+from hermetic.frontmatter import parse_frontmatter, sha256_file
 
 
 def _no_op_clone(*args: object, **kwargs: object) -> None:
@@ -148,7 +148,7 @@ def test_migrate_skill_user_modified_is_preserved(
     md = src / "SKILL.md"
     md.write_text(md.read_text().replace("0.1.0", "0.3.0"))
 
-    with caplog.at_level(logging.WARNING, logger="hermes_plugin_sync.core"):
+    with caplog.at_level(logging.WARNING, logger="hermetic.core"):
         migrate_skill(src, dest, manifest, "sample-plugin", hermes_home)
 
     assert (dest / "SKILL.md").read_text() == user_text
@@ -297,7 +297,7 @@ def test_prune_removed_preserves_user_modified(
     # Upstream removes the skill.
     shutil.rmtree(cloned_plugin / "skills" / "standalone-skill")
 
-    with caplog.at_level(logging.WARNING, logger="hermes_plugin_sync.core"):
+    with caplog.at_level(logging.WARNING, logger="hermetic.core"):
         sync_plugin(plugin_cfg, hermes_home, manifest)
 
     assert dest_md.exists()
@@ -421,7 +421,7 @@ def test_sync_plugin_warns_on_zero_migrations(
         "branch": "main",
     }
     manifest: dict[str, dict] = {}
-    with caplog.at_level(logging.WARNING, logger="hermes_plugin_sync.core"):
+    with caplog.at_level(logging.WARNING, logger="hermetic.core"):
         sync_plugin(cfg, hermes_home, manifest)
 
     messages = [r.getMessage() for r in caplog.records if r.levelno >= logging.WARNING]

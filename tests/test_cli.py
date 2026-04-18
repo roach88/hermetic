@@ -1,4 +1,4 @@
-"""Tests for ``hermes_plugin_sync.cli``.
+"""Tests for ``hermetic.cli``.
 
 We exercise ``cli.main(argv)`` directly rather than shelling out so failures
 surface as Python tracebacks and ``capsys``/``caplog`` work cleanly.
@@ -14,8 +14,8 @@ from typing import Any
 
 import pytest
 
-from hermes_plugin_sync import cli, core
-from hermes_plugin_sync.manifest import load_manifest, save_manifest
+from hermetic import cli, core
+from hermetic.manifest import load_manifest, save_manifest
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -75,7 +75,7 @@ def test_sync_happy_path(
     monkeypatch.setattr(core, "clone_or_update", _no_op_clone)
     cfg = _write_config(tmp_path / "plugin-sync.yaml", [plugin_cfg])
 
-    with caplog.at_level(logging.INFO, logger="hermes_plugin_sync.cli"):
+    with caplog.at_level(logging.INFO, logger="hermetic.cli"):
         rc = cli.main(["--hermes-home", str(hermes_home), "sync", "--config", str(cfg)])
 
     assert rc == 0
@@ -157,7 +157,7 @@ def test_sync_continues_on_error_and_exits_nonzero(
         ],
     )
 
-    with caplog.at_level(logging.INFO, logger="hermes_plugin_sync.cli"):
+    with caplog.at_level(logging.INFO, logger="hermetic.cli"):
         rc = cli.main(["--hermes-home", str(hermes_home), "sync", "--config", str(cfg)])
 
     assert rc == 1
@@ -179,7 +179,7 @@ def test_sync_empty_config_yields_zero_total(
 ) -> None:
     # Gap coverage: empty plugin list - nothing to sync, exit 0, no crash.
     cfg = _write_config(tmp_path / "plugin-sync.yaml", [])
-    with caplog.at_level(logging.INFO, logger="hermes_plugin_sync.cli"):
+    with caplog.at_level(logging.INFO, logger="hermetic.cli"):
         rc = cli.main(["--hermes-home", str(hermes_home), "sync", "--config", str(cfg)])
     assert rc == 0
     assert any("Synced 0/0 plugins" in r.message for r in caplog.records)

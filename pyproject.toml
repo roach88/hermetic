@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "hermes-plugin-sync"
+name = "hermetic-cli"
 dynamic = ["version"]
-description = "Sync Claude Code plugins into Hermes as native skills and delegation skills."
+description = "Hermetic — sync Claude Code plugins into Hermes as native skills and delegation skills."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Tyler Barstow", email = "tyler.barstow@gmail.com" }]
-keywords = ["hermes", "claude-code", "plugin", "skill", "agent", "migration"]
+keywords = ["hermetic", "hermes", "claude-code", "plugin", "skill", "agent", "migration"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -28,6 +28,12 @@ dependencies = [
     "pyyaml>=6",
 ]
 
+[project.urls]
+Homepage = "https://github.com/roach88/hermetic"
+Repository = "https://github.com/roach88/hermetic"
+Issues = "https://github.com/roach88/hermetic/issues"
+Changelog = "https://github.com/roach88/hermetic/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 test = [
     "pytest>=8",
@@ -40,13 +46,13 @@ dev = [
 ]
 
 [project.scripts]
-hermes-plugin-sync = "hermes_plugin_sync.cli:main"
+hermetic = "hermetic.cli:main"
 
 [tool.hatch.version]
-path = "src/hermes_plugin_sync/__init__.py"
+path = "src/hermetic/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/hermes_plugin_sync"]
+packages = ["src/hermetic"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -89,7 +95,7 @@ python-version = "3.10"
 error-on-warning = true
 
 [tool.coverage.run]
-source = ["hermes_plugin_sync"]
+source = ["hermetic"]
 branch = true
 
 [tool.coverage.report]

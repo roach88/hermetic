@@ -20,8 +20,8 @@ from typing import Any
 
 import pytest
 
-from hermes_plugin_sync import core
-from hermes_plugin_sync.manifest import (
+from hermetic import core
+from hermetic.manifest import (
     META_KEY,
     entries_for_plugin,
     load_manifest,

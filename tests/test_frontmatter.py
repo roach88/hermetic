@@ -1,10 +1,10 @@
-"""Tests for ``hermes_plugin_sync.frontmatter``."""
+"""Tests for ``hermetic.frontmatter``."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from hermes_plugin_sync.frontmatter import (
+from hermetic.frontmatter import (
     parse_frontmatter,
     render_frontmatter,
     sha256_bytes,
