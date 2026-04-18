@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hermes-plugin-sync"
+dynamic = ["version"]
+description = "Sync Claude Code plugins into Hermes as native skills and delegation skills."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Tyler Barstow", email = "tyler.barstow@gmail.com" }]
+keywords = ["hermes", "claude-code", "plugin", "skill", "agent", "migration"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Build Tools",
+]
+dependencies = [
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "pytest-mock>=3.12",
+]
+
+[project.scripts]
+hermes-plugin-sync = "hermes_plugin_sync.cli:main"
+
+[tool.hatch.version]
+path = "src/hermes_plugin_sync/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hermes_plugin_sync"]
