@@ -29,8 +29,13 @@ def clone_or_update(url: str, branch: str, dest: Path) -> None:
             ["git", "-C", str(dest), "fetch", "--depth=1", "origin", branch],
             check=True,
         )
+        # Reset against FETCH_HEAD rather than origin/<branch>: a
+        # single-branch shallow clone only tracks the original branch's
+        # remote-tracking ref, so ``origin/<new_branch>`` does not exist
+        # after fetching a different branch. FETCH_HEAD is always written
+        # by the fetch above and points to whatever we just pulled.
         subprocess.run(
-            ["git", "-C", str(dest), "reset", "--hard", f"origin/{branch}"],
+            ["git", "-C", str(dest), "reset", "--hard", "FETCH_HEAD"],
             check=True,
         )
         return

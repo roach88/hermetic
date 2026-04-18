@@ -50,4 +50,8 @@ packages = ["src/hermes_plugin_sync"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers"
+addopts = "-ra --strict-markers -m 'not live'"
+markers = [
+    "live: requires network, default-skipped",
+    "integration: local integration test, default-run",
+]
