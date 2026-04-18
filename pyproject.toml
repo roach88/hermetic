@@ -35,9 +35,8 @@ test = [
     "pytest-mock>=3.12",
 ]
 dev = [
-    "mypy>=1.10",
     "ruff>=0.6",
-    "types-PyYAML>=6",
+    "ty>=0.0.30",
 ]
 
 [project.scripts]
@@ -80,12 +79,14 @@ select = [
 # Tests are allowed loose asserts and long lines in fixtures.
 "tests/**" = ["E501"]
 
-[tool.mypy]
-python_version = "3.10"
-strict = true
-# src layout: tell mypy where the package lives so imports resolve.
-mypy_path = "src"
-packages = ["hermes_plugin_sync"]
+[tool.ty.environment]
+# src/ layout: tell ty where the package root lives.
+root = ["./src"]
+python-version = "3.10"
+
+[tool.ty.terminal]
+# Fail on warnings too — matches the "strict" bar we had with mypy.
+error-on-warning = true
 
 [tool.coverage.run]
 source = ["hermes_plugin_sync"]

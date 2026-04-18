@@ -25,7 +25,7 @@ jobs:
       - run: ruff format --check src tests
 
   typecheck:
-    name: Typecheck (mypy --strict)
+    name: Typecheck (ty)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +33,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv pip install --system -e ".[test,dev]"
-      - run: mypy --strict src/hermes_plugin_sync
+      # `error-on-warning` is set in [tool.ty.terminal] so the run fails
+      # on any diagnostic, matching the strictness we had with mypy.
+      - run: ty check src/hermes_plugin_sync
 
   test:
     name: Test (py${{ matrix.python }} / ${{ matrix.os }})
