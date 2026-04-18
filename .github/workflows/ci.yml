@@ -21,7 +21,6 @@ jobs:
         with:
           python-version: "3.12"
           enable-cache: true
-      - run: uv venv
       - run: uv pip install ruff
       - run: uv run ruff check src tests
       - run: uv run ruff format --check src tests
@@ -35,7 +34,6 @@ jobs:
         with:
           python-version: "3.12"
           enable-cache: true
-      - run: uv venv
       - run: uv pip install -e ".[test,dev]"
       # `error-on-warning` is set in [tool.ty.terminal] so the run fails
       # on any diagnostic, matching the strictness we had with mypy.
@@ -64,7 +62,6 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           enable-cache: true
-      - run: uv venv
       - run: uv pip install -e ".[test]"
       - run: uv run pytest -v
 
@@ -78,6 +75,5 @@ jobs:
         with:
           python-version: "3.12"
           enable-cache: true
-      - run: uv venv
       - run: uv pip install -e ".[test]"
       - run: uv run pytest --cov=hermetic --cov-report=term-missing --cov-fail-under=80
