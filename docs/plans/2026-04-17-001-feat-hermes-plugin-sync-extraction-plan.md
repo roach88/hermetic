@@ -154,7 +154,7 @@ This is the expected shape; the implementer may adjust if decomposition reveals 
 
 ## Implementation Units
 
-- [ ] **Unit 1: Project scaffolding + build config**
+- [x] **Unit 1: Project scaffolding + build config**
 
 **Goal:** Set up the new repo with modern Python packaging baseline. Verify that `pip install -e .` works and the CLI entry point resolves before any migration logic is ported.
 
@@ -191,7 +191,7 @@ This is the expected shape; the implementer may adjust if decomposition reveals 
 
 ---
 
-- [ ] **Unit 2: Extract and decompose core migrator**
+- [x] **Unit 2: Extract and decompose core migrator**
 
 **Goal:** Port the existing `scripts/plugin_sync.py` logic into the new package, decomposed into testable modules with the same behavior.
 
@@ -246,7 +246,7 @@ This is the expected shape; the implementer may adjust if decomposition reveals 
 
 ---
 
-- [ ] **Unit 3: CLI interface**
+- [x] **Unit 3: CLI interface**
 
 **Goal:** Add the `hermes-plugin-sync` CLI with the four subcommands (`sync`, `list`, `inspect`, `clear`). CLI is a thin wrapper over `core.py`.
 

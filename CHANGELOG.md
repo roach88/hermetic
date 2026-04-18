@@ -27,3 +27,18 @@ once it reaches 1.0; pre-1.0 minor versions may include breaking changes.
   is now a deliberate compatibility decision, not silent.
 - `dev` extras group with `mypy>=1.10` + `types-PyYAML>=6`. `mypy --strict`
   passes clean across `src/hermes_plugin_sync/`.
+- Full CLI with four subcommands (`sync`, `list`, `inspect`, `clear`) plus
+  global `--hermes-home`, `--log-level`, and `--version` flags. Path
+  resolution: `--hermes-home` > `$HERMES_HOME` > `~/.hermes/`.
+- `--json` output flag on `list` and `inspect` for machine-readable output.
+  Shapes documented in the CLI reference.
+- Manifest extension: a reserved top-level `_plugins` key now records
+  `{git, branch, last_synced}` per plugin after each successful sync. Older
+  manifests without this key load gracefully (treated as "not recorded");
+  the per-entry rows used by Hermes are unchanged. New helper
+  `manifest.entries_for_plugin` and constant `manifest.META_KEY` make the
+  schema explicit.
+- Continue-on-error sync semantics: `sync` runs every plugin in
+  `plugin-sync.yaml`, logging errors per plugin without halting the loop.
+  Final exit code is 0 if all succeeded, 1 if any failed; an end-of-run
+  summary line records `Synced N/M plugins (K errors); manifest at <path>`.

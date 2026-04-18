@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import shutil
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +20,7 @@ from .frontmatter import (
     sha256_file,
 )
 from .git import clone_or_update
+from .manifest import META_KEY
 from .tools import translate_tools
 
 logger = logging.getLogger(__name__)
@@ -201,9 +203,14 @@ def prune_removed(
     must not silently destroy local work.
     """
     skills_dir = _skills_dir(hermes_home)
+    # Skip the reserved META_KEY row - its value shape is plugin->meta, not
+    # the per-entry shape we filter on. Also tolerate non-dict junk defensively.
     stale = [
         k for k, v in manifest.items()
-        if v.get("plugin") == plugin and k not in seen_keys
+        if k != META_KEY
+        and isinstance(v, dict)
+        and v.get("plugin") == plugin
+        and k not in seen_keys
     ]
     for key in stale:
         entry = manifest[key]
@@ -270,3 +277,19 @@ def sync_plugin(
             seen_keys.add(str(dest.relative_to(skills_dir)))
 
     prune_removed(plugin, seen_keys, manifest, hermes_home)
+
+    # Record per-plugin metadata only after a successful run so the timestamp
+    # always reflects a real completion, not a partial/failed sync. Reaching
+    # this line means clone_or_update + every migrate_* + prune_removed all
+    # returned without raising.
+    plugins_meta = manifest.setdefault(META_KEY, {})
+    if not isinstance(plugins_meta, dict):
+        # Defensive: if a corrupt manifest stored META_KEY as a non-dict,
+        # reset it rather than crash. Callers can still recover by re-syncing.
+        plugins_meta = {}
+        manifest[META_KEY] = plugins_meta
+    plugins_meta[plugin] = {
+        "git": plugin_cfg["git"],
+        "branch": plugin_cfg.get("branch", "main"),
+        "last_synced": datetime.now(timezone.utc).isoformat(),
+    }

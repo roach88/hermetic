@@ -145,8 +145,15 @@ def test_outputs_match_old_script_byte_for_byte(
     )
 
     # Manifests equal once absolute paths are normalized.
+    # Strip the new manifest's `_plugins` metadata block before comparing:
+    # Unit 3 added that key for CLI bookkeeping, the legacy script never
+    # wrote it, and the migration *output* (skills + per-entry manifest rows)
+    # is unchanged. Comparing only the per-entry rows preserves the parity
+    # invariant we actually care about.
+    new_manifest_loaded = load_manifest(new_root)
+    new_manifest_loaded.pop("_plugins", None)
     norm_old = _normalize_manifest_paths(old_manifest, old_plugins)
-    norm_new = _normalize_manifest_paths(load_manifest(new_root), new_plugins)
+    norm_new = _normalize_manifest_paths(new_manifest_loaded, new_plugins)
     assert norm_old == norm_new
 
 

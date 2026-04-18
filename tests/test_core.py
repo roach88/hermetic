@@ -335,6 +335,47 @@ def test_prune_removed_with_no_dest_dir_just_drops_manifest_entry(
     assert manifest == {}
 
 
+def test_sync_plugin_records_plugin_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+    hermes_home: Path,
+    cloned_plugin: Path,
+    plugin_cfg: dict,
+) -> None:
+    # Unit-3 schema extension: after a successful sync the manifest carries
+    # a `_plugins[<name>]` block with git/branch/last_synced.
+    monkeypatch.setattr(core, "clone_or_update", _no_op_clone)
+    manifest: dict[str, dict] = {}
+
+    sync_plugin(plugin_cfg, hermes_home, manifest)
+
+    assert "_plugins" in manifest
+    meta = manifest["_plugins"]["sample-plugin"]
+    assert meta["git"] == plugin_cfg["git"]
+    assert meta["branch"] == "main"
+    # ISO-8601 UTC string ends with `+00:00` for `datetime.now(timezone.utc)`.
+    assert meta["last_synced"].endswith("+00:00")
+
+
+def test_sync_plugin_does_not_record_metadata_on_clone_failure(
+    monkeypatch: pytest.MonkeyPatch,
+    hermes_home: Path,
+    plugin_cfg: dict,
+) -> None:
+    # If clone_or_update raises, the per-plugin run did not complete and the
+    # `_plugins` metadata must NOT be written - timestamps must reflect real
+    # successful syncs only.
+    def boom(*args: object, **kwargs: object) -> None:
+        raise RuntimeError("clone exploded")
+
+    monkeypatch.setattr(core, "clone_or_update", boom)
+    manifest: dict[str, dict] = {}
+
+    with pytest.raises(RuntimeError):
+        sync_plugin(plugin_cfg, hermes_home, manifest)
+
+    assert "_plugins" not in manifest
+
+
 def test_sync_plugin_with_subdir(
     monkeypatch: pytest.MonkeyPatch,
     hermes_home: Path,
